@@ -6,11 +6,14 @@ import (
 	"math"
 )
 
+// HashTiler is used for tile coding.
 type HashTiler struct {
 	tiles int
 	seed  *maphash.Seed
 }
 
+// NewHashTiler creates a new tile coder with a unique random seed. The `tiles` argument determines the number of tiles
+// that will be calculated. Tiling is uniform with the displacement vector (1,-1).
 func NewHashTiler(tiles int) (*HashTiler, error) {
 	seed := maphash.MakeSeed()
 	return &HashTiler{
@@ -19,6 +22,9 @@ func NewHashTiler(tiles int) (*HashTiler, error) {
 	}, nil
 }
 
+// Tile returns a vector of length equal to `tiles` (the argument to `NewHashTiler`). That vector contains hashes
+// describing the input data. The length of the input data is not checked, but it is generally expected that the input
+// length should always be the same for calls to the same HashTiler.
 func (ht HashTiler) Tile(data []float64) []uint64 {
 	tiles := make([]uint64, ht.tiles)
 	hash := maphash.Hash{}
