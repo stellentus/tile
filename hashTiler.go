@@ -8,18 +8,21 @@ import (
 
 type HashTiler struct {
 	tiles int
-	hash  *maphash.Hash
+	seed  *maphash.Seed
 }
 
 func NewHashTiler(tiles int) (*HashTiler, error) {
+	seed := maphash.MakeSeed()
 	return &HashTiler{
 		tiles: tiles,
-		hash:  &maphash.Hash{},
+		seed:  &seed,
 	}, nil
 }
 
 func (ht HashTiler) Tile(data []float64) []uint64 {
 	tiles := make([]uint64, ht.tiles)
+	hash := maphash.Hash{}
+	hash.SetSeed(*ht.seed)
 
 	qstate := make([]int, len(data))
 	base := make([]int, len(data))
@@ -49,13 +52,13 @@ func (ht HashTiler) Tile(data []float64) []uint64 {
 		/* add additional indices for tiling and hashing_set so they hash differently */
 		coordinates[i] = uint64(j)
 
-		ht.hash.Reset()
-		err := binary.Write(ht.hash, binary.LittleEndian, coordinates)
+		hash.Reset()
+		err := binary.Write(&hash, binary.LittleEndian, coordinates)
 		if err != nil {
 			panic(err.Error())
 		}
 
-		tiles[j] = ht.hash.Sum64()
+		tiles[j] = hash.Sum64()
 	}
 
 	return tiles
