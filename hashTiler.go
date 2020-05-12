@@ -2,52 +2,24 @@ package tile
 
 import (
 	"encoding/binary"
-	"errors"
 	"hash/maphash"
 	"math"
 )
 
 type HashTiler struct {
-	tiles  int
-	buffer []uint64
-	hash   *maphash.Hash
+	tiles int
+	hash  *maphash.Hash
 }
 
-type opt func(ht *HashTiler) error
-
-func BufferOpt(buf []uint64) opt {
-	return func(ht *HashTiler) error {
-		switch {
-		case ht.buffer != nil:
-			return errors.New("HashTiler already has buffer")
-		case len(buf) != ht.tiles:
-			return errors.New("Hashtiler tile size does not match buffer")
-		default:
-			ht.buffer = buf
-			return nil
-		}
-	}
-}
-
-func NewHashTiler(tiles int, opts ...opt) (*HashTiler, error) {
-	ht := &HashTiler{
-		tiles:  tiles,
-		hash:   &maphash.Hash{},
-		buffer: make([]uint64, tiles),
-	}
-	for _, o := range opts {
-		if err := o(ht); err != nil {
-			return nil, err
-		}
-	}
-	return ht, nil
+func NewHashTiler(tiles int) (*HashTiler, error) {
+	return &HashTiler{
+		tiles: tiles,
+		hash:  &maphash.Hash{},
+	}, nil
 }
 
 func (ht HashTiler) Tile(data []float64) []uint64 {
-	tiles := ht.buffer
-	if tiles == nil {
-		tiles = make([]uint64, ht.tiles)
-	}
+	tiles := make([]uint64, ht.tiles)
 
 	qstate := make([]int, len(data))
 	base := make([]int, len(data))
