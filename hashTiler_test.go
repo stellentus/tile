@@ -1,6 +1,7 @@
 package tile
 
 import (
+	"fmt"
 	"math/rand"
 	"testing"
 
@@ -67,6 +68,119 @@ func TestHashTilerUnitGrid2DWithOffset(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestHashTilerUnitGrid2DRowsAreCorrect(t *testing.T) {
+	// In this case, "correct" means each subsequent element has exactly one hash different from the previous ones
+	tests := map[string]int{
+		// Obviously testing with a single tiling doesn't make sense
+		"Two":  2,
+		"Five": 5,
+	}
+
+	for name, num := range tests {
+		t.Run(name, func(t *testing.T) {
+			ht, err := NewHashTiler(num)
+			require.NoError(t, err)
+
+			offset := 1 / float64(num)
+
+			for i := 0; i < num; i++ {
+				x := float64(i) * offset
+				gridOfHashes := make([][]uint64, num)
+
+				for j := 0; j < num; j++ {
+					y := float64(j) * offset
+					gridOfHashes[j] = ht.Tile([]float64{x, y})
+				}
+
+				verifyGridSlice(t, gridOfHashes)
+			}
+		})
+	}
+}
+
+func TestHashTilerUnitGrid2DColumnsAreCorrect(t *testing.T) {
+	// In this case, "correct" means each subsequent element has exactly one hash different from the previous ones
+	tests := map[string]int{
+		// Obviously testing with a single tiling doesn't make sense
+		"Two":  2,
+		"Five": 5,
+	}
+
+	for name, num := range tests {
+		t.Run(name, func(t *testing.T) {
+			ht, err := NewHashTiler(num)
+			require.NoError(t, err)
+
+			offset := 1 / float64(num)
+
+			for i := 0; i < num; i++ {
+				y := float64(i) * offset
+				gridOfHashes := make([][]uint64, num)
+
+				for j := 0; j < num; j++ {
+					x := float64(j) * offset
+					gridOfHashes[j] = ht.Tile([]float64{x, y})
+				}
+
+				verifyGridSlice(t, gridOfHashes)
+			}
+		})
+	}
+}
+
+func verifyGridSlice(t *testing.T, gridOfHashes [][]uint64) {
+	// For each box in this row (or column), find the hash which it has in common with all other boxes in the row (or column), and delete it
+	lastHashes := gridOfHashes[len(gridOfHashes)-1]
+	for i := range gridOfHashes[:len(gridOfHashes)-1] {
+		commonHash, err := intersect(gridOfHashes, i, lastHashes) // Expect exactly one
+		require.NoError(t, err)
+
+		// If a common hash was found, it's also in all remaining slices, so delete it.
+		for j := i; j < len(gridOfHashes); j++ {
+			gridOfHashes[j] = deleteHash(gridOfHashes[j], commonHash)
+		}
+	}
+
+	assert.Len(t, gridOfHashes[len(gridOfHashes)-1], 1, "Final box should have one unique hash")
+}
+
+func intersect(gridOfHashes [][]uint64, idx int, lastHashes []uint64) (uint64, error) {
+	theseHashes := gridOfHashes[idx]
+	foundHash := false
+	hash := uint64(0)
+
+	for _, hashFromGrid := range theseHashes {
+		for _, hashFromLast := range lastHashes {
+			if hashFromGrid == hashFromLast {
+				if foundHash {
+					return 0, fmt.Errorf("Found multiple shared hashes at index %d", idx)
+				}
+				hash = hashFromGrid
+				foundHash = true
+			}
+		}
+	}
+
+	var err error
+	if !foundHash {
+		err = fmt.Errorf("No shared hash was found at index %d", idx)
+	}
+	return hash, err
+}
+
+func deleteHash(hashes []uint64, hash uint64) []uint64 {
+	newHashes := make([]uint64, len(hashes)-1)
+	idx := 0
+	for _, val := range hashes {
+		if val != hash {
+			newHashes[idx] = val
+			idx++
+		}
+	}
+
+	return newHashes
 }
 
 func TestHashTilerNotEqual(t *testing.T) {
