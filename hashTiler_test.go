@@ -35,6 +35,40 @@ func TestHashTilerEqual(t *testing.T) {
 	}
 }
 
+func TestHashTilerUnitGrid2DWithOffset(t *testing.T) {
+	tests := map[string]int{
+		"One":  1,
+		"Two":  2,
+		"Five": 5,
+		"Ten":  10,
+	}
+
+	for name, num := range tests {
+		t.Run(name, func(t *testing.T) {
+			ht, err := NewHashTiler(num)
+			require.NoError(t, err)
+
+			offset := 1 / float64(num)
+			smallOffset := offset / 2
+			gridOfHashes := [][]uint64{}
+			gridOfOffsetHashes := [][]uint64{}
+
+			for i := 0; i < num; i++ {
+				for j := 0; j < num; j++ {
+					x, y := float64(i)*offset, float64(j)*offset
+					gridOfHashes = append(gridOfHashes, ht.Tile([]float64{x, y}))
+					gridOfOffsetHashes = append(gridOfOffsetHashes, ht.Tile([]float64{x + smallOffset, y + smallOffset}))
+				}
+			}
+
+			// Confirm that offset hashes are equal to regular hashes
+			for i := range gridOfHashes {
+				assert.EqualValues(t, gridOfHashes[i], gridOfOffsetHashes[i], "hashes with small offset should be equal")
+			}
+		})
+	}
+}
+
 func TestHashTilerNotEqual(t *testing.T) {
 	tests := map[string]struct {
 		tiles int
