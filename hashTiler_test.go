@@ -62,19 +62,24 @@ func TestHashTilerNotEqual(t *testing.T) {
 }
 
 func TestHashTilerCorrectTileLength(t *testing.T) {
-	tests := map[string]int{
+	numberOfTilesTest := map[string]int{
 		"One Tile":  1,
 		"Two Tile":  2,
 		"Four Tile": 4,
 		"500 Tile":  500,
 	}
+	inputDataTest := map[string][]float64{
+		"single value": []float64{5},
+		"long list":    []float64{5, 1, 4, 5, 63, 46, 37},
+	}
 
-	for name, tiles := range tests {
+	for name, tiles := range numberOfTilesTest {
 		t.Run(name, func(t *testing.T) {
 			ht, err := NewHashTiler(tiles)
 			require.NoError(t, err)
-			assert.Len(t, ht.Tile([]float64{5}), tiles)
-			assert.Len(t, ht.Tile([]float64{5, 1, 4, 5, 63, 46, 37}), tiles)
+			for inputName, data := range inputDataTest {
+				assert.Len(t, ht.Tile(data), tiles, inputName)
+			}
 		})
 	}
 }
