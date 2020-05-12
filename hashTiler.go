@@ -11,10 +11,6 @@ type HashTiler struct {
 	tiles  int
 	buffer []uint64
 	hash   *maphash.Hash
-
-	qstate      []int
-	base        []int
-	coordinates []uint64
 }
 
 type opt func(ht *HashTiler) error
@@ -33,13 +29,10 @@ func BufferOpt(buf []uint64) opt {
 	}
 }
 
-func NewHashTiler(tiles, fields int, opts ...opt) (*HashTiler, error) {
+func NewHashTiler(tiles int, opts ...opt) (*HashTiler, error) {
 	ht := &HashTiler{
-		tiles:       tiles,
-		hash:        &maphash.Hash{},
-		qstate:      make([]int, fields),
-		base:        make([]int, fields),
-		coordinates: make([]uint64, fields+1), /* one interval number per relevant dimension */
+		tiles: tiles,
+		hash:  &maphash.Hash{},
 	}
 	for _, o := range opts {
 		if err := o(ht); err != nil {
@@ -55,10 +48,14 @@ func (ht HashTiler) Tile(data []float64) []uint64 {
 		tiles = make([]uint64, ht.tiles)
 	}
 
+	qstate := make([]int, len(data))
+	base := make([]int, len(data))
+	coordinates := make([]uint64, len(data)+1) /* one interval number per relevant dimension */
+
 	/* quantize state to integers (henceforth, tile widths == ht.tiles) */
 	for i := 0; i < len(data); i++ {
-		ht.qstate[i] = int(math.Floor(float64(data[i]) * float64(ht.tiles)))
-		ht.base[i] = 0
+		qstate[i] = int(math.Floor(float64(data[i]) * float64(ht.tiles)))
+		base[i] = 0
 	}
 
 	/*compute the tile numbers */
@@ -68,20 +65,20 @@ func (ht HashTiler) Tile(data []float64) []uint64 {
 		for ; i < len(data); i++ {
 
 			/* find coordinates of activated tile in tiling space */
-			if ht.qstate[i] >= ht.base[i] {
-				ht.coordinates[i] = uint64(ht.qstate[i] - ((ht.qstate[i] - ht.base[i]) % ht.tiles))
+			if qstate[i] >= base[i] {
+				coordinates[i] = uint64(qstate[i] - ((qstate[i] - base[i]) % ht.tiles))
 			} else {
-				ht.coordinates[i] = uint64(ht.qstate[i] + 1 + ((ht.base[i] - ht.qstate[i] - 1) % ht.tiles) - ht.tiles)
+				coordinates[i] = uint64(qstate[i] + 1 + ((base[i] - qstate[i] - 1) % ht.tiles) - ht.tiles)
 			}
 
 			/* compute displacement of next tiling in quantized space */
-			ht.base[i] += 1 + (2 * i)
+			base[i] += 1 + (2 * i)
 		}
 		/* add additional indices for tiling and hashing_set so they hash differently */
-		ht.coordinates[i] = uint64(j)
+		coordinates[i] = uint64(j)
 
 		ht.hash.Reset()
-		err := binary.Write(ht.hash, binary.LittleEndian, ht.coordinates)
+		err := binary.Write(ht.hash, binary.LittleEndian, coordinates)
 		if err != nil {
 			panic(err.Error())
 		}

@@ -23,7 +23,7 @@ func TestHashTilerEqual(t *testing.T) {
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			ht, err := NewHashTiler(test.tiles, len(test.data[0]))
+			ht, err := NewHashTiler(test.tiles)
 			require.NoError(t, err)
 
 			first := ht.Tile(test.data[0])
@@ -49,7 +49,7 @@ func TestHashTilerNotEqual(t *testing.T) {
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			ht, err := NewHashTiler(test.tiles, len(test.data[0]))
+			ht, err := NewHashTiler(test.tiles)
 			require.NoError(t, err)
 
 			first := ht.Tile(test.data[0])
@@ -71,12 +71,9 @@ func TestHashTilerCorrectTileLength(t *testing.T) {
 
 	for name, tiles := range tests {
 		t.Run(name, func(t *testing.T) {
-			ht, err := NewHashTiler(tiles, 1)
+			ht, err := NewHashTiler(tiles)
 			require.NoError(t, err)
 			assert.Len(t, ht.Tile([]float64{5}), tiles)
-
-			ht, err = NewHashTiler(tiles, 7)
-			require.NoError(t, err)
 			assert.Len(t, ht.Tile([]float64{5, 1, 4, 5, 63, 46, 37}), tiles)
 		})
 	}
@@ -103,7 +100,7 @@ func BenchmarkHashTiler(b *testing.B) {
 	for _, bench := range benchmarks {
 		b.Run(bench.name, func(b *testing.B) {
 			v := makeValues(bench.values)
-			ht, _ := NewHashTiler(bench.tiles, bench.values)
+			ht, _ := NewHashTiler(bench.tiles)
 			b.ResetTimer()
 			for i := 0; i < b.N; i++ {
 				_ = ht.Tile(v)
