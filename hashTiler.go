@@ -31,8 +31,9 @@ func BufferOpt(buf []uint64) opt {
 
 func NewHashTiler(tiles int, opts ...opt) (*HashTiler, error) {
 	ht := &HashTiler{
-		tiles: tiles,
-		hash:  &maphash.Hash{},
+		tiles:  tiles,
+		hash:   &maphash.Hash{},
+		buffer: make([]uint64, tiles),
 	}
 	for _, o := range opts {
 		if err := o(ht); err != nil {
