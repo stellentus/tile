@@ -32,6 +32,19 @@ func ExampleIndexingTiler_Tile_second() {
 	// The indices for [5.5] are [3 4 2]
 }
 
+func ExampleIndexingTiler_Tile_third() {
+	// Test indexing with a constant offset added to each output.
+	ht, _ := NewIndexingTilerWithOffset(3, 15, UnlimitedIndices)
+	for _, data := range [][]float64{{4.99}, {5.32}, {5.34}, {5.5}} {
+		fmt.Println("The indices for", data, "are", ht.Tile(data))
+	}
+	// Output:
+	// The indices for [4.99] are [15 16 17]
+	// The indices for [5.32] are [18 16 17]
+	// The indices for [5.34] are [18 19 17]
+	// The indices for [5.5] are [18 19 17]
+}
+
 func TestIndexingTilerEqual(t *testing.T) {
 	tests := map[string]struct {
 		tiles int

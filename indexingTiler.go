@@ -18,8 +18,10 @@ type IndexingTiler struct {
 	// indexSize is the maximum number of indices to be stored in the map.
 	indexSize int
 	// currentIndex stores the number that will be used for the next index. (Therefore, it's also the number
-	// of elements currently in the map, unless overflow has occurred.)
+	// of elements currently in the map, unless overflow has occurred or offset is used.)
 	currentIndex int
+	// offset is the offset added to every index. Indices are stored with this offset.
+	offset int
 
 	// err stores any errors that occurred due to an index overflow
 	err error
@@ -30,11 +32,19 @@ type IndexingTiler struct {
 // If indexSize is UnlimitedIndices, then the number of indices is unlimited. Otherwise, the error is provided
 // through CheckError().
 func NewIndexingTiler(tiles, indexSize int) (*IndexingTiler, error) {
+	return NewIndexingTilerWithOffset(tiles, 0, indexSize)
+}
+
+// NewIndexingTilerWithOffset creates a new indexing tiler, but with an offset added to each provided index.
+// Indices output by Tile will be in the range [offset, indexSize+offset).
+func NewIndexingTilerWithOffset(tiles, offset, indexSize int) (*IndexingTiler, error) {
 	ht, err := NewHashTiler(tiles)
 	return &IndexingTiler{
-		indexSize: indexSize,
-		ht:        ht,
-		mp:        make(map[uint64]int),
+		indexSize:    indexSize,
+		ht:           ht,
+		offset:       offset,
+		currentIndex: offset,
+		mp:           make(map[uint64]int),
 	}, err
 }
 
@@ -49,9 +59,9 @@ func (it *IndexingTiler) Tile(data []float64) []int {
 	for i, hash := range hashes {
 		idx, ok := it.mp[hash]
 		if !ok {
-			if it.currentIndex >= it.indexSize {
+			if it.indexSize != UnlimitedIndices && it.currentIndex >= it.indexSize+it.offset {
 				it.err = errors.New("Too many tile indices were used, so one is being overwritten")
-				it.currentIndex = 0
+				it.currentIndex = it.offset
 			}
 			idx = it.currentIndex
 			it.mp[hash] = it.currentIndex
