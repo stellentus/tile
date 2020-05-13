@@ -36,7 +36,7 @@ func (ht HashTiler) Tile(data []float64) []uint64 {
 
 	/* quantize state to integers (henceforth, tile widths == ht.tiles) */
 	for i := 0; i < len(data); i++ {
-		qstate[i] = int(math.Floor(float64(data[i]) * float64(ht.tiles)))
+		qstate[i] = int(math.Floor(data[i] * float64(ht.tiles)))
 	}
 
 	/*compute the tile numbers */
