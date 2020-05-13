@@ -31,26 +31,26 @@ func (ht HashTiler) Tile(data []float64) []uint64 {
 	hash.SetSeed(*ht.seed)
 
 	qstate := make([]int, len(data))
-	coordinates := make([]uint64, len(data)+1) /* one interval number per relevant dimension */
+	coordinates := make([]uint64, len(data)+1) // one interval number per relevant dimension
 
-	/* quantize state to integers (henceforth, tile widths == ht.tiles) */
+	// quantize state to integers (henceforth, tile widths == ht.tiles)
 	for i := 0; i < len(data); i++ {
 		qstate[i] = int(math.Floor(data[i] * float64(ht.tiles)))
 	}
 
-	/*compute the tile numbers */
+	//compute the tile numbers
 	for tileOffset := 0; tileOffset < ht.tiles; tileOffset++ {
-		/* loop over each relevant dimension */
+		// loop over each relevant dimension
 		for i := 0; i < len(data); i++ {
 
-			/* find coordinates of activated tile in tiling space */
+			// find coordinates of activated tile in tiling space
 			if qstate[i] >= tileOffset {
 				coordinates[i] = uint64(qstate[i] - ((qstate[i] - tileOffset) % ht.tiles))
 			} else {
 				coordinates[i] = uint64(qstate[i] + 1 + ((tileOffset - qstate[i] - 1) % ht.tiles) - ht.tiles)
 			}
 		}
-		/* add additional indices for tiling and hashing_set so they hash differently */
+		// add additional indices for tiling and hashing_set so they hash differently
 		coordinates[len(data)] = uint64(tileOffset)
 
 		hash.Reset()
