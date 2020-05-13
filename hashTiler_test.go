@@ -36,6 +36,55 @@ func TestHashTilerEqual(t *testing.T) {
 	}
 }
 
+func TestHashTilerNotEqual(t *testing.T) {
+	tests := map[string]struct {
+		tiles int
+		data  [][]float64
+	}{
+		"Different":       {10, [][]float64{{5}, {6}, {7}, {8}, {9}}},
+		"Range":           {10, [][]float64{{5.09}, {5.11}, {4.99}}},
+		"Big step":        {3, [][]float64{{5.32}, {5.5}, {4.99}}},
+		"multi-dimension": {1, [][]float64{{3.14, 2.718}, {4, 2}, {3, 3}}},
+		"range-dimension": {4, [][]float64{{3.14, 2.718}, {3.2, 2.8}, {3.3, 2.5}}},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			ht, err := NewHashTiler(test.tiles)
+			require.NoError(t, err)
+
+			first := ht.Tile(test.data[0])
+			for i, d := range test.data[1:] {
+				other := ht.Tile(d)
+				assert.NotEqualf(t, other, first, "tilings should not match, failed element[%d]", i+1)
+			}
+		})
+	}
+}
+
+func TestHashTilerCorrectTileLength(t *testing.T) {
+	numberOfTilesTest := map[string]int{
+		"One Tile":  1,
+		"Two Tile":  2,
+		"Four Tile": 4,
+		"500 Tile":  500,
+	}
+	inputDataTest := map[string][]float64{
+		"single value": []float64{5},
+		"long list":    []float64{5, 1, 4, 5, 63, 46, 37},
+	}
+
+	for name, tiles := range numberOfTilesTest {
+		t.Run(name, func(t *testing.T) {
+			ht, err := NewHashTiler(tiles)
+			require.NoError(t, err)
+			for inputName, data := range inputDataTest {
+				assert.Len(t, ht.Tile(data), tiles, inputName)
+			}
+		})
+	}
+}
+
 func TestHashTilerUnitGrid2DWithOffset(t *testing.T) {
 	tests := map[string]int{
 		"One":  1,
@@ -181,55 +230,6 @@ func deleteHash(hashes []uint64, hash uint64) []uint64 {
 	}
 
 	return newHashes
-}
-
-func TestHashTilerNotEqual(t *testing.T) {
-	tests := map[string]struct {
-		tiles int
-		data  [][]float64
-	}{
-		"Different":       {10, [][]float64{{5}, {6}, {7}, {8}, {9}}},
-		"Range":           {10, [][]float64{{5.09}, {5.11}, {4.99}}},
-		"Big step":        {3, [][]float64{{5.32}, {5.5}, {4.99}}},
-		"multi-dimension": {1, [][]float64{{3.14, 2.718}, {4, 2}, {3, 3}}},
-		"range-dimension": {4, [][]float64{{3.14, 2.718}, {3.2, 2.8}, {3.3, 2.5}}},
-	}
-
-	for name, test := range tests {
-		t.Run(name, func(t *testing.T) {
-			ht, err := NewHashTiler(test.tiles)
-			require.NoError(t, err)
-
-			first := ht.Tile(test.data[0])
-			for i, d := range test.data[1:] {
-				other := ht.Tile(d)
-				assert.NotEqualf(t, other, first, "tilings should not match, failed element[%d]", i+1)
-			}
-		})
-	}
-}
-
-func TestHashTilerCorrectTileLength(t *testing.T) {
-	numberOfTilesTest := map[string]int{
-		"One Tile":  1,
-		"Two Tile":  2,
-		"Four Tile": 4,
-		"500 Tile":  500,
-	}
-	inputDataTest := map[string][]float64{
-		"single value": []float64{5},
-		"long list":    []float64{5, 1, 4, 5, 63, 46, 37},
-	}
-
-	for name, tiles := range numberOfTilesTest {
-		t.Run(name, func(t *testing.T) {
-			ht, err := NewHashTiler(tiles)
-			require.NoError(t, err)
-			for inputName, data := range inputDataTest {
-				assert.Len(t, ht.Tile(data), tiles, inputName)
-			}
-		})
-	}
 }
 
 func makeValues(size int) []float64 {
