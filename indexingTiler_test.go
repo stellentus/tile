@@ -8,6 +8,30 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func ExampleIndexingTiler_Tile() {
+	ht, _ := NewIndexingTiler(1, UnlimitedIndices)
+	for _, data := range [][]float64{{3.14, 2.718}, {4, 2}, {3, 3}, {3, 2}} {
+		fmt.Println("The index for", data, "is", ht.Tile(data))
+	}
+	// Output:
+	// The index for [3.14 2.718] is [0]
+	// The index for [4 2] is [1]
+	// The index for [3 3] is [2]
+	// The index for [3 2] is [0]
+}
+
+func ExampleIndexingTiler_Tile_second() {
+	ht, _ := NewIndexingTiler(3, UnlimitedIndices)
+	for _, data := range [][]float64{{4.99}, {5.32}, {5.34}, {5.5}} {
+		fmt.Println("The indices for", data, "are", ht.Tile(data))
+	}
+	// Output:
+	// The indices for [4.99] are [0 1 2]
+	// The indices for [5.32] are [3 1 2]
+	// The indices for [5.34] are [3 4 2]
+	// The indices for [5.5] are [3 4 2]
+}
+
 func TestIndexingTilerEqual(t *testing.T) {
 	tests := map[string]struct {
 		tiles int
