@@ -41,13 +41,13 @@ func (ht HashTiler) Tile(data []float64) []uint64 {
 	//compute the tile numbers
 	for tileOffset := 0; tileOffset < ht.tiles; tileOffset++ {
 		// loop over each relevant dimension
-		for i := 0; i < len(data); i++ {
+		for i, q := range qstate {
 
 			// find coordinates of activated tile in tiling space
-			if qstate[i] >= tileOffset {
-				coordinates[i] = uint64(qstate[i] - ((qstate[i] - tileOffset) % ht.tiles))
+			if q >= tileOffset {
+				coordinates[i] = uint64(q - ((q - tileOffset) % ht.tiles))
 			} else {
-				coordinates[i] = uint64(qstate[i] + 1 + ((tileOffset - qstate[i] - 1) % ht.tiles) - ht.tiles)
+				coordinates[i] = uint64(q + 1 + ((tileOffset - q - 1) % ht.tiles) - ht.tiles)
 			}
 		}
 		// add additional indices for tiling and hashing_set so they hash differently
