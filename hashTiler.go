@@ -42,12 +42,15 @@ func (ht HashTiler) Tile(data []float64) []uint64 {
 	for tileOffset := 0; tileOffset < ht.tiles; tileOffset++ {
 		// loop over each relevant dimension
 		for i, q := range qstate {
-
+			diff := q - tileOffset
 			// find coordinates of activated tile in tiling space
-			if q >= tileOffset {
-				coordinates[i] = uint64(q - ((q - tileOffset) % ht.tiles))
+			if diff >= 0 {
+				// This shifts q toward tileOffset so it's at a multiple of 4 (plus the offset)
+				coordinates[i] = uint64(q - ((diff) % ht.tiles))
 			} else {
-				coordinates[i] = uint64(q + 1 + ((tileOffset - q - 1) % ht.tiles) - ht.tiles)
+				// We always want to shift the value to the multiple of 4 below its value, so when
+				// q < tileOffset, it's necessary to move it away from tileOffset instead of toward it.
+				coordinates[i] = uint64(q - ((diff + 1) % ht.tiles) - ht.tiles + 1)
 			}
 		}
 		// add additional indices for tiling and hashing_set so they hash differently
