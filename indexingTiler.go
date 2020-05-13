@@ -31,13 +31,13 @@ type IndexingTiler struct {
 // Hashes are calculated by HashTiler. See its documentation for further details regarding usage.
 // If indexSize is UnlimitedIndices, then the number of indices is unlimited. Otherwise, the error is provided
 // through CheckError().
-func NewIndexingTiler(tiles, indexSize int) (*IndexingTiler, error) {
+func NewIndexingTiler(tiles, indexSize int) (IndexTiler, error) {
 	return NewIndexingTilerWithOffset(tiles, 0, indexSize)
 }
 
 // NewIndexingTilerWithOffset creates a new indexing tiler, but with an offset added to each provided index.
 // Indices output by Tile will be in the range [offset, indexSize+offset).
-func NewIndexingTilerWithOffset(tiles, offset, indexSize int) (*IndexingTiler, error) {
+func NewIndexingTilerWithOffset(tiles, offset, indexSize int) (IndexTiler, error) {
 	ht, err := NewHashTiler(tiles)
 	return &IndexingTiler{
 		indexSize:    indexSize,
