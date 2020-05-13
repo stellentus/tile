@@ -11,7 +11,7 @@ const UnlimitedIndices = math.MaxInt64
 // IndexingTiler is used for tile coding when a slice of indexes is desired. It runs slower than HashTiler.
 type IndexingTiler struct {
 	// ht is the underlying HashTiler that generates the hashes.
-	ht *HashTiler
+	ht Tiler
 
 	// mp stores an index for each hash that has been seen so far.
 	mp map[uint64]int

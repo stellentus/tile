@@ -14,7 +14,7 @@ type HashTiler struct {
 
 // NewHashTiler creates a new tile coder with a unique random seed. The `tiles` argument determines the number of tiles
 // that will be calculated. Tiling is uniform with the displacement vector (1,-1).
-func NewHashTiler(tiles int) (*HashTiler, error) {
+func NewHashTiler(tiles int) (Tiler, error) {
 	seed := maphash.MakeSeed()
 	return &HashTiler{
 		tiles: tiles,
