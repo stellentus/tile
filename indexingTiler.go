@@ -31,25 +31,24 @@ type IndexingTiler struct {
 // Hashes are calculated by HashTiler. See its documentation for further details regarding usage.
 // If indexSize is UnlimitedIndices, then the number of indices is unlimited. Otherwise, the error is provided
 // through CheckError().
-func NewIndexingTiler(tiles, indexSize int) (IndexTiler, error) {
-	return NewIndexingTilerWithOffset(tiles, 0, indexSize)
+func NewIndexingTiler(til Tiler, indexSize int) (IndexTiler, error) {
+	return NewIndexingTilerWithOffset(til, 0, indexSize)
 }
 
 // NewIndexingTilerWithOffset creates a new indexing tiler, but with an offset added to each provided index.
 // Indices output by Tile will be in the range [offset, indexSize+offset).
-func NewIndexingTilerWithOffset(tiles, offset, indexSize int) (IndexTiler, error) {
-	ht, err := NewHashTiler(tiles)
+func NewIndexingTilerWithOffset(til Tiler, offset, indexSize int) (IndexTiler, error) {
 	return &IndexingTiler{
+		ht:           til,
 		indexSize:    indexSize,
-		ht:           ht,
 		offset:       offset,
 		currentIndex: offset,
 		mp:           make(map[uint64]int),
-	}, err
+	}, nil
 }
 
-// Tile returns a vector of length equal to tiles (the argument to NewIndexingTiler). That vector contains indices
-// describing the input data. The indices range from 0 to indexSize-1 (where indexSize was an argument to NewIndexingTiler).
+// Tile returns a vector of indices describing the input data.
+// The indices range from 0 to indexSize-1 (where indexSize was an argument to NewIndexingTiler).
 // The length of the input data is not checked, but it is generally expected that the input
 // length should always be the same for calls to the same IndexingTiler.
 func (it *IndexingTiler) Tile(data []float64) []int {

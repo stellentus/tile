@@ -8,8 +8,13 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func newUnlimitedIndexTiler(tiles int) (IndexTiler, error) {
+	til, _ := NewHashTiler(tiles) // Assume HashTiler test code will catch errors, so don't check here
+	return NewIndexingTiler(til, UnlimitedIndices)
+}
+
 func ExampleIndexingTiler_Tile() {
-	ht, _ := NewIndexingTiler(1, UnlimitedIndices)
+	ht, _ := newUnlimitedIndexTiler(1)
 	for _, data := range [][]float64{{3.14, 2.718}, {4, 2}, {3, 3}, {3, 2}} {
 		fmt.Println("The index for", data, "is", ht.Tile(data))
 	}
@@ -21,7 +26,7 @@ func ExampleIndexingTiler_Tile() {
 }
 
 func ExampleIndexingTiler_Tile_second() {
-	ht, _ := NewIndexingTiler(3, UnlimitedIndices)
+	ht, _ := newUnlimitedIndexTiler(3)
 	for _, data := range [][]float64{{4.99}, {5.32}, {5.34}, {5.5}} {
 		fmt.Println("The indices for", data, "are", ht.Tile(data))
 	}
@@ -34,7 +39,8 @@ func ExampleIndexingTiler_Tile_second() {
 
 func ExampleIndexingTiler_Tile_third() {
 	// Test indexing with a constant offset added to each output.
-	ht, _ := NewIndexingTilerWithOffset(3, 15, UnlimitedIndices)
+	til, _ := NewHashTiler(3) // Assume HashTiler test code will catch errors, so don't check here
+	ht, _ := NewIndexingTilerWithOffset(til, 15, UnlimitedIndices)
 	for _, data := range [][]float64{{4.99}, {5.32}, {5.34}, {5.5}} {
 		fmt.Println("The indices for", data, "are", ht.Tile(data))
 	}
@@ -60,7 +66,7 @@ func TestIndexingTilerEqual(t *testing.T) {
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			ht, err := NewIndexingTiler(test.tiles, UnlimitedIndices)
+			ht, err := newUnlimitedIndexTiler(test.tiles)
 			require.NoError(t, err)
 
 			first := ht.Tile(test.data[0])
@@ -86,7 +92,7 @@ func TestIndexingTilerNotEqual(t *testing.T) {
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			ht, err := NewIndexingTiler(test.tiles, UnlimitedIndices)
+			ht, err := newUnlimitedIndexTiler(test.tiles)
 			require.NoError(t, err)
 
 			first := ht.Tile(test.data[0])
@@ -110,7 +116,8 @@ func TestIndexingTilerUnequalAppearEqualWithSmallMap(t *testing.T) {
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			ht, err := NewIndexingTiler(test.tiles, 1)
+			til, _ := NewHashTiler(test.tiles) // Assume HashTiler test code will catch errors, so don't check here
+			ht, err := NewIndexingTiler(til, 1)
 			require.NoError(t, err)
 
 			for i, d := range test.data {
@@ -140,7 +147,7 @@ func TestIndexingTilerCorrectTileLength(t *testing.T) {
 
 	for name, tiles := range numberOfTilesTest {
 		t.Run(name, func(t *testing.T) {
-			ht, err := NewIndexingTiler(tiles, UnlimitedIndices)
+			ht, err := newUnlimitedIndexTiler(tiles)
 			require.NoError(t, err)
 			for inputName, data := range inputDataTest {
 				assert.Len(t, ht.Tile(data), tiles, inputName)
@@ -159,7 +166,7 @@ func TestIndexingTilerUnitGrid2DWithOffset(t *testing.T) {
 
 	for name, num := range tests {
 		t.Run(name, func(t *testing.T) {
-			ht, err := NewIndexingTiler(num, UnlimitedIndices)
+			ht, err := newUnlimitedIndexTiler(num)
 			require.NoError(t, err)
 
 			offset := 1 / float64(num)
@@ -196,7 +203,7 @@ func TestIndexingTilerUnitGrid2DRowsAreCorrect(t *testing.T) {
 
 	for name, num := range tests {
 		t.Run(name, func(t *testing.T) {
-			ht, err := NewIndexingTiler(num, UnlimitedIndices)
+			ht, err := newUnlimitedIndexTiler(num)
 			require.NoError(t, err)
 
 			offset := 1/float64(num) + epsilon
@@ -227,7 +234,7 @@ func TestIndexingTilerUnitGrid2DColumnsAreCorrect(t *testing.T) {
 
 	for name, num := range tests {
 		t.Run(name, func(t *testing.T) {
-			ht, err := NewIndexingTiler(num, UnlimitedIndices)
+			ht, err := newUnlimitedIndexTiler(num)
 			require.NoError(t, err)
 
 			offset := 1/float64(num) + epsilon
@@ -313,7 +320,7 @@ func BenchmarkIndexingTiler(b *testing.B) {
 	for _, bench := range benchmarks {
 		b.Run(bench.name, func(b *testing.B) {
 			v := makeValues(bench.values)
-			ht, _ := NewIndexingTiler(bench.tiles, UnlimitedIndices)
+			ht, _ := newUnlimitedIndexTiler(bench.tiles)
 			b.ResetTimer()
 			for i := 0; i < b.N; i++ {
 				_ = ht.Tile(v)
