@@ -31,7 +31,6 @@ func (ht HashTiler) Tile(data []float64) []uint64 {
 	hash.SetSeed(*ht.seed)
 
 	qstate := make([]int, len(data))
-	base := make([]int, len(data))
 	coordinates := make([]uint64, len(data)+1) /* one interval number per relevant dimension */
 
 	/* quantize state to integers (henceforth, tile widths == ht.tiles) */
@@ -40,23 +39,19 @@ func (ht HashTiler) Tile(data []float64) []uint64 {
 	}
 
 	/*compute the tile numbers */
-	for j := 0; j < ht.tiles; j++ {
+	for tileOffset := 0; tileOffset < ht.tiles; tileOffset++ {
 		/* loop over each relevant dimension */
-		i := 0
-		for ; i < len(data); i++ {
+		for i := 0; i < len(data); i++ {
 
 			/* find coordinates of activated tile in tiling space */
-			if qstate[i] >= base[i] {
-				coordinates[i] = uint64(qstate[i] - ((qstate[i] - base[i]) % ht.tiles))
+			if qstate[i] >= tileOffset {
+				coordinates[i] = uint64(qstate[i] - ((qstate[i] - tileOffset) % ht.tiles))
 			} else {
-				coordinates[i] = uint64(qstate[i] + 1 + ((base[i] - qstate[i] - 1) % ht.tiles) - ht.tiles)
+				coordinates[i] = uint64(qstate[i] + 1 + ((tileOffset - qstate[i] - 1) % ht.tiles) - ht.tiles)
 			}
-
-			/* compute displacement of next tiling in quantized space */
-			base[i] += 1 + (2 * i)
 		}
 		/* add additional indices for tiling and hashing_set so they hash differently */
-		coordinates[i] = uint64(j)
+		coordinates[len(data)] = uint64(tileOffset)
 
 		hash.Reset()
 		err := binary.Write(&hash, binary.LittleEndian, coordinates)
@@ -64,7 +59,7 @@ func (ht HashTiler) Tile(data []float64) []uint64 {
 			panic(err.Error())
 		}
 
-		tiles[j] = hash.Sum64()
+		tiles[tileOffset] = hash.Sum64()
 	}
 
 	return tiles
