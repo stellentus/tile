@@ -176,8 +176,10 @@ func TestIndexingTilerUnitGrid2DRowsAreCorrect(t *testing.T) {
 	// In this case, "correct" means each subsequent element has exactly one index different from the previous ones
 	tests := map[string]int{
 		// Obviously testing with a single tiling doesn't make sense
-		"Two":  2,
-		"Five": 5,
+		"Two":         2,
+		"Three":       3, // FAILS
+		"Five":        5,
+		"Ninety-Nine": 99, // FAILS
 	}
 
 	for name, num := range tests {
@@ -206,8 +208,10 @@ func TestIndexingTilerUnitGrid2DColumnsAreCorrect(t *testing.T) {
 	// In this case, "correct" means each subsequent element has exactly one index different from the previous ones
 	tests := map[string]int{
 		// Obviously testing with a single tiling doesn't make sense
-		"Two":  2,
-		"Five": 5,
+		"Two":         2,
+		"Three":       3, // passes
+		"Five":        5,
+		"Ninety-Nine": 99, // passes
 	}
 
 	for name, num := range tests {
