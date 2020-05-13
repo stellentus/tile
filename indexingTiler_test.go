@@ -170,6 +170,8 @@ func TestIndexingTilerUnitGrid2DWithOffset(t *testing.T) {
 	}
 }
 
+const epsilon = 1e-5
+
 func TestIndexingTilerUnitGrid2DRowsAreCorrect(t *testing.T) {
 	// In this case, "correct" means each subsequent element has exactly one index different from the previous ones
 	tests := map[string]int{
@@ -183,7 +185,7 @@ func TestIndexingTilerUnitGrid2DRowsAreCorrect(t *testing.T) {
 			ht, err := NewIndexingTiler(num, UnlimitedIndices)
 			require.NoError(t, err)
 
-			offset := 1 / float64(num)
+			offset := 1/float64(num) + epsilon
 
 			for i := 0; i < num; i++ {
 				x := float64(i) * offset
@@ -213,7 +215,7 @@ func TestIndexingTilerUnitGrid2DColumnsAreCorrect(t *testing.T) {
 			ht, err := NewIndexingTiler(num, UnlimitedIndices)
 			require.NoError(t, err)
 
-			offset := 1 / float64(num)
+			offset := 1/float64(num) + epsilon
 
 			for i := 0; i < num; i++ {
 				y := float64(i) * offset
