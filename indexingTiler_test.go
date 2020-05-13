@@ -91,8 +91,6 @@ func TestIndexingTilerUnequalAppearEqualWithSmallMap(t *testing.T) {
 		data  [][]float64
 	}{
 		"Different":       {10, [][]float64{{5}, {6}, {7}, {8}, {9}}},
-		"Range":           {10, [][]float64{{5.09}, {5.11}, {4.99}}},
-		"Big step":        {3, [][]float64{{5.32}, {5.5}, {4.99}}},
 		"multi-dimension": {1, [][]float64{{3.14, 2.718}, {4, 2}, {3, 3}}},
 		"range-dimension": {4, [][]float64{{3.14, 2.718}, {3.2, 2.8}, {3.3, 2.5}}},
 	}
@@ -108,6 +106,9 @@ func TestIndexingTilerUnequalAppearEqualWithSmallMap(t *testing.T) {
 					assert.Equalf(t, 0, index, "tilings should match because all indices are 0, failed element[%d:%d]", i+1, j)
 				}
 			}
+
+			err = ht.CheckError()
+			require.Error(t, err, "IndexingTiler should overflow when only 1 index is enabled")
 		})
 	}
 }

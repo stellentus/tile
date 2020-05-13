@@ -1,7 +1,7 @@
 package tile
 
 import (
-	"fmt"
+	"errors"
 	"math"
 )
 
@@ -20,6 +20,9 @@ type IndexingTiler struct {
 	// currentIndex stores the number that will be used for the next index. (Therefore, it's also the number
 	// of elements currently in the map, unless overflow has occurred.)
 	currentIndex int
+
+	// err stores any errors that occurred due to an index overflow
+	err error
 }
 
 // NewIndexingTiler creates a new Indexing Tiler, which returns a slice of indexes based on the tiles' hashes.
@@ -47,7 +50,7 @@ func (it *IndexingTiler) Tile(data []float64) []int {
 		idx, ok := it.mp[hash]
 		if !ok {
 			if it.currentIndex >= it.indexSize {
-				fmt.Println("Too many tile indices were used, so one is being overwritten", it.currentIndex, it.indexSize)
+				it.err = errors.New("Too many tile indices were used, so one is being overwritten")
 				it.currentIndex = 0
 			}
 			idx = it.currentIndex
@@ -59,4 +62,10 @@ func (it *IndexingTiler) Tile(data []float64) []int {
 	}
 
 	return indices
+}
+
+// CheckError returns an error if more indices were used than expected.
+// There is no reason to check it if indexSize is UnlimitedIndices.
+func (it IndexingTiler) CheckError() error {
+	return it.err
 }
