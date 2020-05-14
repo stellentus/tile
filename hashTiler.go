@@ -31,32 +31,30 @@ func (ht HashTiler) Tile(data []float64) []uint64 {
 	hash.SetSeed(*ht.seed)
 
 	qstate := make([]int, len(data))
-	base := make([]int, len(data))
-	coordinates := make([]uint64, len(data)+1) /* one interval number per relevant dimension */
+	coordinates := make([]uint64, len(data)+1) // one interval number per relevant dimension
 
-	/* quantize state to integers (henceforth, tile widths == ht.tiles) */
+	// quantize state to integers (henceforth, tile widths == ht.tiles)
 	for i := 0; i < len(data); i++ {
-		qstate[i] = int(math.Floor(float64(data[i]) * float64(ht.tiles)))
+		qstate[i] = int(math.Floor(data[i] * float64(ht.tiles)))
 	}
 
-	/*compute the tile numbers */
-	for j := 0; j < ht.tiles; j++ {
-		/* loop over each relevant dimension */
-		i := 0
-		for ; i < len(data); i++ {
-
-			/* find coordinates of activated tile in tiling space */
-			if qstate[i] >= base[i] {
-				coordinates[i] = uint64(qstate[i] - ((qstate[i] - base[i]) % ht.tiles))
+	//compute the tile numbers
+	for tileOffset := 0; tileOffset < ht.tiles; tileOffset++ {
+		// loop over each relevant dimension
+		for i, q := range qstate {
+			diff := q - tileOffset
+			// find coordinates of activated tile in tiling space
+			if diff >= 0 {
+				// This shifts q toward tileOffset so it's at a multiple of 4 (plus the offset)
+				coordinates[i] = uint64(q - ((diff) % ht.tiles))
 			} else {
-				coordinates[i] = uint64(qstate[i] + 1 + ((base[i] - qstate[i] - 1) % ht.tiles) - ht.tiles)
+				// We always want to shift the value to the multiple of 4 below its value, so when
+				// q < tileOffset, it's necessary to move it away from tileOffset instead of toward it.
+				coordinates[i] = uint64(q - ((diff + 1) % ht.tiles) - ht.tiles + 1)
 			}
-
-			/* compute displacement of next tiling in quantized space */
-			base[i] += 1 + (2 * i)
 		}
-		/* add additional indices for tiling and hashing_set so they hash differently */
-		coordinates[i] = uint64(j)
+		// add additional indices for tiling and hashing_set so they hash differently
+		coordinates[len(data)] = uint64(tileOffset)
 
 		hash.Reset()
 		err := binary.Write(&hash, binary.LittleEndian, coordinates)
@@ -64,7 +62,7 @@ func (ht HashTiler) Tile(data []float64) []uint64 {
 			panic(err.Error())
 		}
 
-		tiles[j] = hash.Sum64()
+		tiles[tileOffset] = hash.Sum64()
 	}
 
 	return tiles

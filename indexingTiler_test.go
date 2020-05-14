@@ -170,12 +170,15 @@ func TestIndexingTilerUnitGrid2DWithOffset(t *testing.T) {
 	}
 }
 
+const epsilon = 1e-5
+
 func TestIndexingTilerUnitGrid2DRowsAreCorrect(t *testing.T) {
 	// In this case, "correct" means each subsequent element has exactly one index different from the previous ones
 	tests := map[string]int{
 		// Obviously testing with a single tiling doesn't make sense
-		"Two":  2,
-		"Five": 5,
+		"Two":   2,
+		"Three": 3,
+		"Five":  5,
 	}
 
 	for name, num := range tests {
@@ -183,7 +186,7 @@ func TestIndexingTilerUnitGrid2DRowsAreCorrect(t *testing.T) {
 			ht, err := NewIndexingTiler(num, UnlimitedIndices)
 			require.NoError(t, err)
 
-			offset := 1 / float64(num)
+			offset := 1/float64(num) + epsilon
 
 			for i := 0; i < num; i++ {
 				x := float64(i) * offset
@@ -204,8 +207,9 @@ func TestIndexingTilerUnitGrid2DColumnsAreCorrect(t *testing.T) {
 	// In this case, "correct" means each subsequent element has exactly one index different from the previous ones
 	tests := map[string]int{
 		// Obviously testing with a single tiling doesn't make sense
-		"Two":  2,
-		"Five": 5,
+		"Two":   2,
+		"Three": 3,
+		"Five":  5,
 	}
 
 	for name, num := range tests {
@@ -213,7 +217,7 @@ func TestIndexingTilerUnitGrid2DColumnsAreCorrect(t *testing.T) {
 			ht, err := NewIndexingTiler(num, UnlimitedIndices)
 			require.NoError(t, err)
 
-			offset := 1 / float64(num)
+			offset := 1/float64(num) + epsilon
 
 			for i := 0; i < num; i++ {
 				y := float64(i) * offset
