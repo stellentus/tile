@@ -32,7 +32,7 @@ type singleTiler struct {
 }
 
 func (til *singleTiler) Tile(data []float64) []uint64 {
-	return til.Tile([]float64{data[til.idx]})
+	return til.til.Tile([]float64{data[til.idx]})
 }
 
 // NewSinglesTiler creates a new Tiler which tiles each dimension individually.
@@ -58,23 +58,26 @@ type pairTiler struct {
 }
 
 func (til *pairTiler) Tile(data []float64) []uint64 {
-	return til.Tile([]float64{data[til.idx1], data[til.idx2]})
+	return til.til.Tile([]float64{data[til.idx1], data[til.idx2]})
 }
 
 // NewPairsTiler creates a new Tiler which tiles each pair of dimensions.
 func NewPairsTiler(numDims, tiles int) (Tiler, error) {
-	tils := make([]Tiler, numDims)
+	numTilers := numDims * (numDims - 1) / 2
+	tilerIndex := 0
+	tils := make([]Tiler, numTilers)
 	for i := 0; i < numDims; i++ {
 		for j := i + 1; j < numDims; j++ {
 			til, err := NewHashTiler(tiles)
 			if err != nil {
 				return nil, err
 			}
-			tils[i] = &pairTiler{
+			tils[tilerIndex] = &pairTiler{
 				idx1: i,
 				idx2: j,
 				til:  til,
 			}
+			tilerIndex++
 		}
 	}
 	return NewAggregateTiler(tils)

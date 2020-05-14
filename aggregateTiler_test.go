@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -47,4 +48,33 @@ func ExampleAggregateTiler_Tile() {
 func TestCreateAggregateTiler(t *testing.T) {
 	_, err := newAggregateTiler()
 	require.NoError(t, err)
+}
+
+func TestComplexAggregateTiler(t *testing.T) {
+	numDims := 4
+	numTiles := 2
+	data := []float64{1, 2, 3, 4}
+	expectedLen := (len(data) + len(data)*(len(data)-1)/2) * numTiles // The number of Tilers for the singles and the pairs, times numTiles
+
+	// Create tilers for each single dimension
+	singles, err := NewSinglesTiler(numDims, numTiles)
+	require.NoError(t, err)
+
+	// Create tilers for each pair of dimensions
+	pairs, err := NewPairsTiler(numDims, numTiles)
+	require.NoError(t, err)
+
+	// Create a mega-tiler that appends pairs and singles
+	til, err := NewAggregateTiler([]Tiler{singles, pairs})
+	require.NoError(t, err)
+
+	// Put it all through an IndexingTiler to make it deterministic
+	it, err := NewIndexingTiler(til, expectedLen)
+	require.NoError(t, err)
+
+	result := it.Tile(data)
+	assert.Len(t, result, expectedLen)
+	for i, resI := range result {
+		assert.Equal(t, i, resI)
+	}
 }
