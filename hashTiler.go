@@ -7,8 +7,8 @@ import (
 	"math"
 )
 
-// hashTiler is used for tile coding.
-type hashTiler struct {
+// HashTiler is used for tile coding.
+type HashTiler struct {
 	numTilings int
 	seed       *maphash.Seed
 }
@@ -34,7 +34,7 @@ func NewHashTiler(numTilings int) (Tiler, error) {
 	}
 
 	seed := maphash.MakeSeed()
-	return &hashTiler{
+	return &HashTiler{
 		numTilings: numTilings,
 		seed:       &seed,
 	}, nil
@@ -42,8 +42,8 @@ func NewHashTiler(numTilings int) (Tiler, error) {
 
 // Tile returns a vector of length equal to `numTilings` (the argument to `NewHashTiler`). That vector contains hashes
 // describing the input data. The length of the input data is not checked, but it is generally expected that the input
-// length should always be the same for calls to the same hashTiler.
-func (ht hashTiler) Tile(data []float64) []uint64 {
+// length should always be the same for calls to the same HashTiler.
+func (ht HashTiler) Tile(data []float64) []uint64 {
 	tiles := make([]uint64, ht.numTilings)
 	hash := maphash.Hash{}
 	hash.SetSeed(*ht.seed)
