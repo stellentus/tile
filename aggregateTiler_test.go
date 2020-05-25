@@ -9,7 +9,7 @@ import (
 )
 
 func newAggregateTiler() (Tiler, error) {
-	til1, _ := NewHashTiler(3)
+	til1, _ := NewHashTiler(4)
 	til2, _ := NewHashTiler(2)
 	return NewAggregateTiler([]Tiler{til1, til2})
 }
@@ -18,31 +18,31 @@ func ExampleAggregateTiler_Tile() {
 	til, _ := newAggregateTiler()
 	it, _ := NewIndexingTiler(til, UnlimitedIndices)
 	test := [][]float64{
-		{3, 4},
-		{3.35, 4},
-		{3.68, 4},
+		{2, 4},
+		{2.3, 4},
+		{2.7, 4},
 
-		{3, 4.35},
-		{3.35, 4.35},
-		{3.68, 4.35},
+		{2, 4.3},
+		{2.3, 4.3},
+		{2.7, 4.3},
 
-		{3, 4.68},
-		{3.35, 4.68},
-		{3.68, 4.68},
+		{2, 4.7},
+		{2.3, 4.7},
+		{2.7, 4.7},
 	}
 	for _, data := range test {
 		fmt.Println("The index for", data, "is", it.Tile(data))
 	}
 	// Output:
-	// The index for [3 4] is [0 1 2 3 4]
-	// The index for [3.35 4] is [0 5 2 3 4]
-	// The index for [3.68 4] is [0 5 6 3 7]
-	// The index for [3 4.35] is [0 8 2 3 4]
-	// The index for [3.35 4.35] is [0 9 2 3 4]
-	// The index for [3.68 4.35] is [0 9 6 3 7]
-	// The index for [3 4.68] is [0 8 10 3 11]
-	// The index for [3.35 4.68] is [0 9 10 3 11]
-	// The index for [3.68 4.68] is [0 9 12 3 13]
+	// The index for [2 4] is [0 1 2 3 4 5]
+	// The index for [2.3 4] is [0 6 2 3 4 5]
+	// The index for [2.7 4] is [0 6 7 3 4 8]
+	// The index for [2 4.3] is [0 9 2 3 4 5]
+	// The index for [2.3 4.3] is [0 10 2 3 4 5]
+	// The index for [2.7 4.3] is [0 10 7 3 4 8]
+	// The index for [2 4.7] is [0 9 11 3 4 12]
+	// The index for [2.3 4.7] is [0 10 11 3 4 12]
+	// The index for [2.7 4.7] is [0 10 13 3 4 14]
 }
 
 func TestCreateAggregateTiler(t *testing.T) {
