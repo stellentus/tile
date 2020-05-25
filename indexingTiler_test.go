@@ -9,12 +9,18 @@ import (
 )
 
 func newUnlimitedIndexTiler(tiles int) (IndexTiler, error) {
-	til, _ := NewHashTiler(tiles) // Assume HashTiler test code will catch errors, so don't check here
+	til, err := NewHashTiler(tiles)
+	if err != nil {
+		return nil, err
+	}
 	return NewIndexingTiler(til, UnlimitedIndices)
 }
 
 func ExampleIndexingTiler_Tile() {
-	ht, _ := newUnlimitedIndexTiler(1)
+	ht, err := newUnlimitedIndexTiler(1)
+	if err != nil {
+		fmt.Println(err.Error()) // HashTiler/IndexingTiler test code should have caught all errors
+	}
 	for _, data := range [][]float64{{3.14, 2.718}, {4, 2}, {3, 3}, {3, 2}} {
 		fmt.Println("The index for", data, "is", ht.Tile(data))
 	}
@@ -26,7 +32,10 @@ func ExampleIndexingTiler_Tile() {
 }
 
 func ExampleIndexingTiler_Tile_second() {
-	ht, _ := newUnlimitedIndexTiler(3)
+	ht, err := newUnlimitedIndexTiler(3)
+	if err != nil {
+		fmt.Println(err.Error()) // HashTiler/IndexingTiler test code should have caught all errors
+	}
 	for _, data := range [][]float64{{4.99}, {5.32}, {5.34}, {5.5}} {
 		fmt.Println("The indices for", data, "are", ht.Tile(data))
 	}
@@ -39,7 +48,10 @@ func ExampleIndexingTiler_Tile_second() {
 
 func ExampleIndexingTiler_Tile_third() {
 	// Test indexing with a constant offset added to each output.
-	til, _ := NewHashTiler(3) // Assume HashTiler test code will catch errors, so don't check here
+	til, err := NewHashTiler(3)
+	if err != nil {
+		fmt.Println(err.Error()) // HashTiler test code should have caught all errors
+	}
 	ht, _ := NewIndexingTilerWithOffset(til, 15, UnlimitedIndices)
 	for _, data := range [][]float64{{4.99}, {5.32}, {5.34}, {5.5}} {
 		fmt.Println("The indices for", data, "are", ht.Tile(data))
