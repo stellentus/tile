@@ -8,6 +8,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+var _ = IndexTiler(&IndexingTiler{}) // Conform to interface
+
 func newUnlimitedIndexTiler(tiles int) (IndexTiler, error) {
 	til, err := NewHashTiler(tiles)
 	if err != nil {

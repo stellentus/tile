@@ -10,6 +10,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+var _ = Tiler(&HashTiler{}) // Conform to interface
+
 func TestHashTilerEqual(t *testing.T) {
 	tests := map[string]struct {
 		tiles int

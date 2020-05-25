@@ -8,6 +8,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+var _ = Tiler(&AggregateTiler{}) // Conform to interface
+
 func newAggregateTiler() (Tiler, error) {
 	til1, _ := NewHashTiler(4)
 	til2, _ := NewHashTiler(2)
