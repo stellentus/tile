@@ -25,7 +25,7 @@ func (err InvalidNumTilingsError) Error() string {
 
 // NewHashTiler creates a new tile coder with a unique random seed. The `numTilings` argument determines the number of
 // tilings that will be calculated. Tiling is uniform with the displacement vector (1,-1).
-func NewHashTiler(numTilings int) (Tiler, error) {
+func NewHashTiler(numTilings int) (*HashTiler, error) {
 	switch {
 	case numTilings < 1:
 		return nil, InvalidNumTilingsError{numTilings, "must be at least 1"}

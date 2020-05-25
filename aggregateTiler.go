@@ -8,7 +8,7 @@ type AggregateTiler struct {
 
 // NewAggregateTiler creates a new Tiler which returns all of the hashes provided
 // by the individual Tilers.
-func NewAggregateTiler(tils []Tiler) (Tiler, error) {
+func NewAggregateTiler(tils []Tiler) (*AggregateTiler, error) {
 	return &AggregateTiler{
 		tils: tils,
 	}, nil
@@ -36,7 +36,7 @@ func (til *singleTiler) Tile(data []float64) []uint64 {
 }
 
 // NewSinglesTiler creates a new Tiler which tiles each dimension individually.
-func NewSinglesTiler(numDims, tiles int) (Tiler, error) {
+func NewSinglesTiler(numDims, tiles int) (*AggregateTiler, error) {
 	tils := make([]Tiler, numDims)
 	for i := range tils {
 		til, err := NewHashTiler(tiles)
@@ -62,7 +62,7 @@ func (til *pairTiler) Tile(data []float64) []uint64 {
 }
 
 // NewPairsTiler creates a new Tiler which tiles each pair of dimensions.
-func NewPairsTiler(numDims, tiles int) (Tiler, error) {
+func NewPairsTiler(numDims, tiles int) (*AggregateTiler, error) {
 	numTilers := numDims * (numDims - 1) / 2
 	tilerIndex := 0
 	tils := make([]Tiler, numTilers)
