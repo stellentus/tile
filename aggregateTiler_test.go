@@ -37,12 +37,12 @@ func ExampleAggregateTiler_Tile() {
 	// The index for [2 4] is [0 1 2 3 4 5]
 	// The index for [2.3 4] is [0 6 2 3 4 5]
 	// The index for [2.7 4] is [0 6 7 3 4 8]
-	// The index for [2 4.3] is [0 9 2 3 4 5]
-	// The index for [2.3 4.3] is [0 10 2 3 4 5]
-	// The index for [2.7 4.3] is [0 10 7 3 4 8]
-	// The index for [2 4.7] is [0 9 11 3 4 12]
-	// The index for [2.3 4.7] is [0 10 11 3 4 12]
-	// The index for [2.7 4.7] is [0 10 13 3 4 14]
+	// The index for [2 4.3] is [0 1 2 9 4 5]
+	// The index for [2.3 4.3] is [0 6 2 9 4 5]
+	// The index for [2.7 4.3] is [0 6 7 9 4 8]
+	// The index for [2 4.7] is [0 1 10 9 4 11]
+	// The index for [2.3 4.7] is [0 6 10 9 4 11]
+	// The index for [2.7 4.7] is [0 6 12 9 4 13]
 }
 
 func TestCreateAggregateTiler(t *testing.T) {
