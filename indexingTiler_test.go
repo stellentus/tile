@@ -121,7 +121,7 @@ func TestIndexingTilerUnequalAppearEqualWithSmallMap(t *testing.T) {
 		tiles int
 		data  [][]float64
 	}{
-		"Different":       {10, [][]float64{{5}, {6}, {7}, {8}, {9}}},
+		"Different":       {16, [][]float64{{5}, {6}, {7}, {8}, {9}}},
 		"multi-dimension": {1, [][]float64{{3.14, 2.718}, {4, 2}, {3, 3}}},
 		"range-dimension": {4, [][]float64{{3.14, 2.718}, {3.2, 2.8}, {3.3, 2.5}}},
 	}
@@ -170,10 +170,10 @@ func TestIndexingTilerCorrectTileLength(t *testing.T) {
 
 func TestIndexingTilerUnitGrid2DWithOffset(t *testing.T) {
 	tests := map[string]int{
-		"One":  1,
-		"Two":  2,
-		"Four": 4,
-		"Ten":  10,
+		"One":   1,
+		"Two":   2,
+		"Four":  4,
+		"Eight": 8,
 	}
 
 	for name, num := range tests {

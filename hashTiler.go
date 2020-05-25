@@ -2,6 +2,7 @@ package tile
 
 import (
 	"encoding/binary"
+	"fmt"
 	"hash/maphash"
 	"math"
 )
@@ -12,9 +13,26 @@ type hashTiler struct {
 	seed       *maphash.Seed
 }
 
+// InvalidNumTilingsError is returned
+type InvalidNumTilingsError struct {
+	NumTilings int
+	Reason     string
+}
+
+func (err InvalidNumTilingsError) Error() string {
+	return fmt.Sprintf("invalid number of tilings (%d): %s", err.NumTilings, err.Reason)
+}
+
 // NewHashTiler creates a new tile coder with a unique random seed. The `numTilings` argument determines the number of
 // tilings that will be calculated. Tiling is uniform with the displacement vector (1,-1).
 func NewHashTiler(numTilings int) (Tiler, error) {
+	switch {
+	case numTilings < 1:
+		return nil, InvalidNumTilingsError{numTilings, "must be at least 1"}
+	case (numTilings & (numTilings - 1)) != 0:
+		return nil, InvalidNumTilingsError{numTilings, "must be a power of 2"}
+	}
+
 	seed := maphash.MakeSeed()
 	return &hashTiler{
 		numTilings: numTilings,

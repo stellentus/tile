@@ -3,6 +3,7 @@ package tile
 import (
 	"fmt"
 	"math/rand"
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -14,10 +15,10 @@ func TestHashTilerEqual(t *testing.T) {
 		tiles int
 		data  [][]float64
 	}{
-		"Same":            {10, [][]float64{{5}, {5}, {5}, {5}, {5}}},
-		"Halfway":         {10, [][]float64{{5.05}, {5}}},
-		"Range":           {10, [][]float64{{5.11}, {5.15}, {5.19}}},
-		"Big step":        {3, [][]float64{{5.34}, {5.5}, {5.65}}},
+		"Same":            {16, [][]float64{{5}, {5}, {5}, {5}, {5}}},
+		"Halfway":         {16, [][]float64{{5.03125}, {5}}},
+		"Range":           {16, [][]float64{{5.26}, {5.29}, {5.31}}},
+		"Big step":        {2, [][]float64{{5.51}, {5.7}, {5.99}}},
 		"multi-dimension": {1, [][]float64{{3.14, 2.718}, {3, 2}}},
 		"range-dimension": {4, [][]float64{{3.14, 2.718}, {3.2, 2.7}, {3, 2.5}}},
 	}
@@ -41,9 +42,9 @@ func TestHashTilerNotEqual(t *testing.T) {
 		tiles int
 		data  [][]float64
 	}{
-		"Different":       {10, [][]float64{{5}, {6}, {7}, {8}, {9}}},
-		"Range":           {10, [][]float64{{5.09}, {5.11}, {4.99}}},
-		"Big step":        {3, [][]float64{{5.32}, {5.5}, {4.99}}},
+		"Different":       {16, [][]float64{{5}, {6}, {7}, {8}, {9}}},
+		"Range":           {16, [][]float64{{5.12}, {5.13}, {4.99}}},
+		"Big step":        {2, [][]float64{{5.32}, {5.5}, {4.99}}},
 		"multi-dimension": {1, [][]float64{{3.14, 2.718}, {4, 2}, {3, 3}}},
 		"range-dimension": {4, [][]float64{{3.14, 2.718}, {3.2, 2.8}, {3.3, 2.5}}},
 	}
@@ -62,12 +63,48 @@ func TestHashTilerNotEqual(t *testing.T) {
 	}
 }
 
+func TestHashTilerValidNumTiles(t *testing.T) {
+	tests := []int{
+		1,
+		2,
+		8,
+		512,
+		8192,
+	}
+
+	for _, numTiles := range tests {
+		t.Run(strconv.Itoa(numTiles), func(t *testing.T) {
+			ht, err := NewHashTiler(numTiles)
+			assert.NoError(t, err)
+			assert.NotNil(t, ht)
+		})
+	}
+}
+
+func TestHashTilerInvalidNumTiles(t *testing.T) {
+	tests := []int{
+		-16, -3, -1,
+		0,
+		3, 5, 6, 7,
+		127, 129,
+		8191, 8193,
+	}
+
+	for _, numTiles := range tests {
+		t.Run(strconv.Itoa(numTiles), func(t *testing.T) {
+			ht, err := NewHashTiler(numTiles)
+			assert.IsType(t, InvalidNumTilingsError{}, err)
+			assert.Nil(t, ht)
+		})
+	}
+}
+
 func TestHashTilerCorrectTileLength(t *testing.T) {
 	numberOfTilesTest := map[string]int{
 		"One Tile":  1,
 		"Two Tile":  2,
 		"Four Tile": 4,
-		"500 Tile":  500,
+		"512 Tile":  512,
 	}
 	inputDataTest := map[string][]float64{
 		"single value": []float64{5},
@@ -87,10 +124,10 @@ func TestHashTilerCorrectTileLength(t *testing.T) {
 
 func TestHashTilerUnitGrid2DWithOffset(t *testing.T) {
 	tests := map[string]int{
-		"One":  1,
-		"Two":  2,
-		"Five": 5,
-		"Ten":  10,
+		"One":     1,
+		"Two":     2,
+		"Four":    4,
+		"Sixteen": 16,
 	}
 
 	for name, num := range tests {
@@ -123,8 +160,8 @@ func TestHashTilerUnitGrid2DRowsAreCorrect(t *testing.T) {
 	// In this case, "correct" means each subsequent element has exactly one hash different from the previous ones
 	tests := map[string]int{
 		// Obviously testing with a single tiling doesn't make sense
-		"Two":  2,
-		"Five": 5,
+		"Two":   2,
+		"Eight": 8,
 	}
 
 	for name, num := range tests {
@@ -153,8 +190,8 @@ func TestHashTilerUnitGrid2DColumnsAreCorrect(t *testing.T) {
 	// In this case, "correct" means each subsequent element has exactly one hash different from the previous ones
 	tests := map[string]int{
 		// Obviously testing with a single tiling doesn't make sense
-		"Two":  2,
-		"Five": 5,
+		"Two":   2,
+		"Eight": 8,
 	}
 
 	for name, num := range tests {
@@ -247,7 +284,7 @@ func BenchmarkHashTiler(b *testing.B) {
 	}{
 		{"1x1", 1, 1},
 		{"4x10", 4, 10},
-		{"100x100", 100, 100},
+		{"128x100", 128, 100},
 	}
 
 	for _, bench := range benchmarks {
