@@ -327,7 +327,7 @@ func BenchmarkIndexingTiler(b *testing.B) {
 		values, tiles int
 	}{
 		{"1x1", 1, 1},
-		{"4x10", 4, 10},
+		{"4x16", 4, 16},
 		{"100x128", 100, 128},
 	}
 
