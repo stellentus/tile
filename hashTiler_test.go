@@ -283,8 +283,8 @@ func BenchmarkHashTiler(b *testing.B) {
 		values, tiles int
 	}{
 		{"1x1", 1, 1},
-		{"4x10", 4, 10},
-		{"128x100", 128, 100},
+		{"4x16", 4, 16},
+		{"100x128", 100, 128},
 	}
 
 	for _, bench := range benchmarks {

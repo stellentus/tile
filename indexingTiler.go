@@ -8,8 +8,8 @@ import (
 // UnlimitedIndices can be provided to NewIndexingTiler to indicate there is no maximum number of indices.
 const UnlimitedIndices = math.MaxInt64
 
-// indexingTiler is used for tile coding when a slice of indexes is desired. It runs slower than HashTiler.
-type indexingTiler struct {
+// IndexingTiler is used for tile coding when a slice of indexes is desired. It runs slower than HashTiler.
+type IndexingTiler struct {
 	// ht is the underlying HashTiler that generates the hashes.
 	ht Tiler
 
@@ -31,14 +31,14 @@ type indexingTiler struct {
 // Hashes are calculated by HashTiler. See its documentation for further details regarding usage.
 // If indexSize is UnlimitedIndices, then the number of indices is unlimited. Otherwise, the error is provided
 // through CheckError().
-func NewIndexingTiler(til Tiler, indexSize int) (IndexTiler, error) {
+func NewIndexingTiler(til Tiler, indexSize int) (*IndexingTiler, error) {
 	return NewIndexingTilerWithOffset(til, 0, indexSize)
 }
 
 // NewIndexingTilerWithOffset creates a new indexing tiler, but with an offset added to each provided index.
 // Indices output by Tile will be in the range [offset, indexSize+offset).
-func NewIndexingTilerWithOffset(til Tiler, offset, indexSize int) (IndexTiler, error) {
-	return &indexingTiler{
+func NewIndexingTilerWithOffset(til Tiler, offset, indexSize int) (*IndexingTiler, error) {
+	return &IndexingTiler{
 		ht:           til,
 		indexSize:    indexSize,
 		offset:       offset,
@@ -50,8 +50,8 @@ func NewIndexingTilerWithOffset(til Tiler, offset, indexSize int) (IndexTiler, e
 // Tile returns a vector of indices describing the input data.
 // The indices range from 0 to indexSize-1 (where indexSize was an argument to NewIndexingTiler).
 // The length of the input data is not checked, but it is generally expected that the input
-// length should always be the same for calls to the same indexingTiler.
-func (it *indexingTiler) Tile(data []float64) []int {
+// length should always be the same for calls to the same IndexingTiler.
+func (it *IndexingTiler) Tile(data []float64) []int {
 	hashes := it.ht.Tile(data)
 
 	indices := make([]int, len(hashes))
@@ -75,7 +75,7 @@ func (it *indexingTiler) Tile(data []float64) []int {
 
 // CheckError returns an error if more indices were used than expected.
 // There is no reason to check it if indexSize is UnlimitedIndices.
-func (it indexingTiler) CheckError() error {
+func (it IndexingTiler) CheckError() error {
 	return it.err
 }
 
