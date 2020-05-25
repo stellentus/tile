@@ -78,3 +78,28 @@ func (it *indexingTiler) Tile(data []float64) []int {
 func (it indexingTiler) CheckError() error {
 	return it.err
 }
+
+// MaxIndices returns the maximum number of indices with a given maximum range of input data, number of dimensions
+// in the input data, and number of tilings. It assumes the number of tilings is the same in each dimension.
+// For example, when tiling a 4-dimensional input, with each input value ranging from -3 to 6, and 32 tilings, the
+// call would be `MaxIndices(6-(-3), 4, 32)`.
+func MaxIndices(maxRange, numDims, numTilings int) int {
+	ranges := make([]int, numDims)
+	for i := range ranges {
+		ranges[i] = maxRange
+	}
+	return MaxIndicesForRanges(ranges, numTilings)
+}
+
+// MaxIndicesForRanges returns the maximum number of indices with a given maximum range of input data and number of
+// tilings. The ranges slice contains the maximum range for each of the input values being hashed.
+func MaxIndicesForRanges(ranges []int, numTilings int) int {
+	result := 1
+	for _, val := range ranges {
+		// Add +1 because the most values along the "edges" of the region will include tiles that are otherwise entirely out of the region.
+		result *= val + 1
+	}
+
+	result *= numTilings
+	return result
+}

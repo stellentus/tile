@@ -328,3 +328,40 @@ func BenchmarkIndexingTiler(b *testing.B) {
 		})
 	}
 }
+
+func TestMaxIndices(t *testing.T) {
+	tests := map[string]struct {
+		maxRange, numDims, numTilings int
+		expected                      int
+	}{
+		"Trivial case": {1, 1, 1, 2},
+		"Simple case":  {4, 2, 8, 200},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			actual := MaxIndices(test.maxRange, test.numDims, test.numTilings)
+			assert.Equal(t, test.expected, actual)
+		})
+	}
+}
+
+func TestMaxIndicesForRanges(t *testing.T) {
+	tests := map[string]struct {
+		ranges     []int
+		numTilings int
+		expected   int
+	}{
+		"Trivial case":              {[]int{1}, 1, 2},
+		"Simple case":               {[]int{4, 4}, 8, 200},
+		"Different dimensions case": {[]int{4, 2}, 16, 240},
+		"Overly complicated case":   {[]int{4, 2, 7, 1, 12}, 16, 49920},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			actual := MaxIndicesForRanges(test.ranges, test.numTilings)
+			assert.Equal(t, test.expected, actual)
+		})
+	}
+}
