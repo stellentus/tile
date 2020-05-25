@@ -36,10 +36,10 @@ func (til *singleTiler) Tile(data []float64) []uint64 {
 }
 
 // NewSinglesTiler creates a new Tiler which tiles each dimension individually.
-func NewSinglesTiler(numDims, tiles int) (*AggregateTiler, error) {
+func NewSinglesTiler(numDims, numTilings int) (*AggregateTiler, error) {
 	tils := make([]Tiler, numDims)
 	for i := range tils {
-		til, err := NewHashTiler(tiles)
+		til, err := NewHashTiler(numTilings)
 		if err != nil {
 			return nil, err
 		}
@@ -62,13 +62,13 @@ func (til *pairTiler) Tile(data []float64) []uint64 {
 }
 
 // NewPairsTiler creates a new Tiler which tiles each pair of dimensions.
-func NewPairsTiler(numDims, tiles int) (*AggregateTiler, error) {
+func NewPairsTiler(numDims, numTilings int) (*AggregateTiler, error) {
 	numTilers := numDims * (numDims - 1) / 2
 	tilerIndex := 0
 	tils := make([]Tiler, numTilers)
 	for i := 0; i < numDims; i++ {
 		for j := i + 1; j < numDims; j++ {
-			til, err := NewHashTiler(tiles)
+			til, err := NewHashTiler(numTilings)
 			if err != nil {
 				return nil, err
 			}
