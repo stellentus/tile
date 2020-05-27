@@ -1,16 +1,14 @@
 package tile
 
 import (
-	"encoding/binary"
 	"fmt"
-	"hash/maphash"
 	"math"
+	"math/rand"
 )
 
 // HashTiler is used for tile coding.
 type HashTiler struct {
 	numTilings int
-	seed       *maphash.Seed
 }
 
 // InvalidNumTilingsError is returned
@@ -26,6 +24,7 @@ func (err InvalidNumTilingsError) Error() string {
 // NewHashTiler creates a new tile coder with a unique random seed. The `numTilings` argument determines the number of
 // tilings that will be calculated. Tiling is uniform with the displacement vector (1,-1).
 func NewHashTiler(numTilings int) (*HashTiler, error) {
+	ct.data = map[uint64]uint64{}
 	switch {
 	case numTilings < 1:
 		return nil, InvalidNumTilingsError{numTilings, "must be at least 1"}
@@ -33,10 +32,8 @@ func NewHashTiler(numTilings int) (*HashTiler, error) {
 		return nil, InvalidNumTilingsError{numTilings, "must be a power of 2"}
 	}
 
-	seed := maphash.MakeSeed()
 	return &HashTiler{
 		numTilings: numTilings,
-		seed:       &seed,
 	}, nil
 }
 
@@ -45,8 +42,6 @@ func NewHashTiler(numTilings int) (*HashTiler, error) {
 // length should always be the same for calls to the same HashTiler.
 func (ht HashTiler) Tile(data []float64) []uint64 {
 	tiles := make([]uint64, ht.numTilings)
-	hash := maphash.Hash{}
-	hash.SetSeed(*ht.seed)
 
 	qstate := make([]int, len(data))
 	offsets := make([]int, len(data))
@@ -76,14 +71,76 @@ func (ht HashTiler) Tile(data []float64) []uint64 {
 		// add additional indices for tiling and hashing_set so they hash differently
 		coordinates[len(data)] = uint64(tileNum)
 
-		hash.Reset()
-		err := binary.Write(&hash, binary.LittleEndian, coordinates)
-		if err != nil {
-			panic(err.Error())
-		}
-
-		tiles[tileNum] = hash.Sum64()
+		tiles[tileNum] = hash(coordinates)
 	}
 
 	return tiles
+}
+
+type CollisionTable struct {
+	data       map[uint64]uint64
+	max        uint64
+	clearhits  int
+	safe       int
+	calls      int
+	collisions int
+}
+
+var ct = CollisionTable{
+	data: map[uint64]uint64{},
+	max:  1000000,
+}
+
+func hash(ints []uint64) uint64 {
+	ct.calls++
+	j := hash_UNH(ints, ct.max, 449)
+	ccheck := hash_UNH(ints, ^uint64(0), 457)
+
+	old, ok := ct.data[j]
+	switch {
+	case !ok:
+		ct.data[j] = ccheck
+		ct.clearhits++
+	case ccheck == old:
+		ct.clearhits++
+	case ct.safe == 0:
+		ct.collisions++
+		panic("Collision!")
+	default:
+		panic("Collision handling not implemented")
+		// long h2 = 1 + 2 * hash_UNH(ints,num_ints,(MaxLONGINT)/4,449);
+		// int i = 0;
+		// while (++i) {
+		// 	ct->collisions++;
+		// 	j = (j+h2) % (ct->m);
+		// 	/*printf("collision (%d) \n",j);*/
+		// 	if (i > ct->m) {printf("\nTiles: Collision table out of Memory"); exit(0);}
+		// 	if (ccheck == ct->data[j]) break;
+		// 	if (ct->data[j] == -1) {ct->data[j] = ccheck; break;}
+		// }
+	}
+	return j
+}
+
+var rndseq = make([]uint64, 2048)
+
+func init() {
+	for i := range rndseq {
+		rndseq[i] = rand.Uint64()
+	}
+}
+
+func hash_UNH(ints []uint64, max, increment uint64) uint64 {
+	var sum uint64
+
+	for i, v := range ints {
+		/* add random table offset for this dimension and wrap around */
+		v += (increment * uint64(i))
+		v %= uint64(len(rndseq))
+
+		/* add selected random number to sum */
+		sum += rndseq[int(v)]
+	}
+
+	return sum % max
 }
